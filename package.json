@@ -1,5 +1,5 @@
 {
-  "name": "lat-price-protect-form-fill",
+  "name": "hlmark-price-protect-form-fill",
   "version": "0.1.0",
   "private": true,
   "packageManager": "bun@1.2.22",
@@ -22,5 +22,8 @@
     "jsdom": "^26.0.0",
     "typescript": "^5.8.2",
     "vitest": "^3.0.8"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.0.1"
   }
 }
