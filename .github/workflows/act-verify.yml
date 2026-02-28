@@ -1,0 +1,122 @@
+name: Local Act Verify
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Setup Bun (GitHub Actions)
+        if: ${{ env.ACT != 'true' }}
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Bun (act local)
+        if: ${{ env.ACT == 'true' }}
+        run: |
+          set -euo pipefail
+
+          BUN_VERSION="1.2.22"
+          ARCH="$(uname -m)"
+
+          case "$ARCH" in
+            x86_64|amd64)
+              BUN_ARCHIVE="bun-linux-x64-baseline.zip"
+              BUN_DIR="bun-linux-x64-baseline"
+              ;;
+            aarch64|arm64)
+              BUN_ARCHIVE="bun-linux-aarch64.zip"
+              BUN_DIR="bun-linux-aarch64"
+              ;;
+            *)
+              echo "Unsupported architecture for Bun: $ARCH" >&2
+              exit 1
+              ;;
+          esac
+
+          curl -fsSL "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/${BUN_ARCHIVE}" -o /tmp/bun.zip
+          rm -rf /tmp/bun-extract
+          mkdir -p /tmp/bun-extract
+          unzip -o -q /tmp/bun.zip -d /tmp/bun-extract
+
+          mkdir -p "$HOME/.bun/bin"
+          cp "/tmp/bun-extract/${BUN_DIR}/bun" "$HOME/.bun/bin/bun"
+          chmod +x "$HOME/.bun/bin/bun"
+
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          "$HOME/.bun/bin/bun" --version
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Audit dependencies
+        if: ${{ env.ACT_SKIP_AUDIT != '1' }}
+        run: bun audit
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Run tests
+        run: bun run test
+
+      - name: Build extension
+        run: bun run build
+
+      - name: Package extension binary
+        run: |
+          VERSION=$(node -p 'require("./package.json").version')
+          zip -r "lat-price-protect-form-fill-${VERSION}.zip" manifest.json popup.html popup.css dist
+          ls -lh "lat-price-protect-form-fill-${VERSION}.zip"
+
+  bump-version-logic:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate patch bump logic
+        run: |
+          set -euo pipefail
+
+          extract_version() {
+            sed -nE 's/^[[:space:]]*"version"[[:space:]]*:[[:space:]]*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/p' "$1" | head -n1
+          }
+
+          CURRENT="$(extract_version package.json)"
+          PREVIEW_NEXT="$(./scripts/bump-version.sh --mode patch --dry-run)"
+          WRITTEN_NEXT="$(./scripts/bump-version.sh --mode patch --write)"
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          EXPECTED="${MAJOR}.${MINOR}.$((PATCH + 1))"
+
+          if [[ "$PREVIEW_NEXT" != "$EXPECTED" ]]; then
+            echo "Dry-run bump mismatch: got $PREVIEW_NEXT expected $EXPECTED" >&2
+            exit 1
+          fi
+
+          if [[ "$WRITTEN_NEXT" != "$EXPECTED" ]]; then
+            echo "Write bump mismatch: got $WRITTEN_NEXT expected $EXPECTED" >&2
+            exit 1
+          fi
+
+          PACKAGE_VERSION="$(extract_version package.json)"
+          MANIFEST_VERSION="$(extract_version manifest.json)"
+
+          if [[ "$PACKAGE_VERSION" != "$EXPECTED" || "$MANIFEST_VERSION" != "$EXPECTED" ]]; then
+            echo "Version files not updated correctly: package=$PACKAGE_VERSION manifest=$MANIFEST_VERSION expected=$EXPECTED" >&2
+            exit 1
+          fi
+
+          git diff -- package.json manifest.json

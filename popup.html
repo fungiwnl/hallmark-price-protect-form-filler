@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Price Protection Autofill</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Price Protection Autofill</h1>
+      <p class="hint">Fill your details once, encrypt locally, and autofill the claim form.</p>
+
+      <section>
+        <h2>Security</h2>
+        <label class="block">
+          Encryption Passphrase
+          <input id="passphrase" type="password" autocomplete="new-password" />
+        </label>
+        <p class="hint small">Passphrase is not stored. Use at least 12 characters with uppercase, lowercase, number, and symbol. After a successful save/decrypt, decrypted details stay cached for 60 seconds for next-step form pages.</p>
+      </section>
+
+      <section class="actions">
+        <button id="saveButton" type="button">Save Securely</button>
+        <button id="loadButton" type="button">Load Saved Profile</button>
+        <button id="fillButton" type="button">Fill Current Tab</button>
+        <button id="clearButton" type="button" class="danger">Delete Saved Profile</button>
+      </section>
+
+      <p id="savedMeta" class="hint small"></p>
+      <p id="status" role="status" aria-live="polite"></p>
+
+      <section>
+        <h2>Personal Details</h2>
+        <div class="grid">
+          <label>Account Number <input id="accountNumber" autocomplete="off" /></label>
+          <label>
+            Primary Card Holder
+            <select id="isPrimaryCardHolder">
+              <option value="">Skip</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+          <label>
+            Title
+            <select id="title">
+              <option value="">Skip</option>
+              <option value="Mr">Mr</option>
+              <option value="Mrs">Mrs</option>
+              <option value="Miss">Miss</option>
+              <option value="Ms">Ms</option>
+              <option value="Dr">Dr</option>
+            </select>
+          </label>
+          <label>First Name <input id="firstName" autocomplete="off" /></label>
+          <label>Middle Name <input id="middleName" autocomplete="off" /></label>
+          <label>Surname <input id="surname" autocomplete="off" /></label>
+          <label>Date of Birth <input id="dob" type="date" /></label>
+          <label>Phone <input id="phone" autocomplete="off" /></label>
+          <label>Email <input id="email" type="email" autocomplete="off" /></label>
+          <label>
+            Authorize Another Person
+            <select id="authorizeAnotherPerson">
+              <option value="">Skip</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section>
+        <h2>Address</h2>
+        <div class="grid">
+          <label>
+            Country
+            <select id="country">
+              <option value="">Skip</option>
+              <option value="Australia">Australia</option>
+              <option value="New Zealand">New Zealand</option>
+            </select>
+          </label>
+          <label>Street Number/Line 1 <input id="streetNumber" autocomplete="off" /></label>
+          <label>Street Name/Line 2 <input id="streetName" autocomplete="off" /></label>
+          <label>Suburb <input id="suburb" autocomplete="off" /></label>
+          <label>
+            State/Territory
+            <select id="state">
+              <option value="">Skip</option>
+              <option value="ACT">ACT</option>
+              <option value="NSW">NSW</option>
+              <option value="NT">NT</option>
+              <option value="QLD">QLD</option>
+              <option value="SA">SA</option>
+              <option value="TAS">TAS</option>
+              <option value="VIC">VIC</option>
+              <option value="WA">WA</option>
+            </select>
+          </label>
+          <label>Postcode <input id="postcode" autocomplete="off" /></label>
+          <label>
+            Mailing Same As Residential
+            <select id="mailingSameAsResidential">
+              <option value="">Skip</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section>
+        <h2>Claim Details (Step 2)</h2>
+        <div class="grid">
+          <label>
+            Claim Type
+            <select id="claimType">
+              <option value="">Skip</option>
+              <option value="Price Protection">Price Protection</option>
+              <option value="Merchandise Protection">Merchandise Protection</option>
+              <option value="Stolen Card">Stolen Card</option>
+            </select>
+          </label>
+          <label>
+            Item Category
+            <select id="itemCategory">
+              <option value="">Skip</option>
+              <option value="Whitegoods">Whitegoods</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Appliances">Appliances</option>
+              <option value="Homeware or furniture">Homeware or furniture</option>
+              <option value="Footwear">Footwear</option>
+              <option value="Health">Health</option>
+              <option value="Fitness and sports">Fitness and sports</option>
+              <option value="Clothing">Clothing</option>
+              <option value="Jewellery">Jewellery</option>
+              <option value="Cash or equivalent">Cash or equivalent</option>
+              <option value="Perishable items">Perishable items</option>
+              <option value="Animals or plants">Animals or plants</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label>Further Item Details <textarea id="claimItemDetails" rows="2"></textarea></label>
+          <label>Date of Purchase <input id="purchaseDate" type="date" /></label>
+          <label>Date Price Reduced <input id="priceReductionDate" type="date" /></label>
+          <label>
+            Sale Item Same As Purchased
+            <select id="isSaleItemSimilar">
+              <option value="">Skip</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+          <label>
+            Currency
+            <select id="currencyType">
+              <option value="">Skip</option>
+              <option value="AUD">AUD</option>
+              <option value="NZD">NZD</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label>Purchased Price <input id="purchasedPrice" inputmode="decimal" /></label>
+          <label>Reduced Price <input id="reducedPrice" inputmode="decimal" /></label>
+          <label>
+            Full Payment On Card
+            <select id="isFullPaymentOnCard">
+              <option value="">Skip</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+          <label>Retailer Name <input id="purchasedFromRetailer" autocomplete="off" /></label>
+          <label>
+            Reduction Seen At Same Retailer
+            <select id="isPriceReductionFromSameRetailer">
+              <option value="">Skip</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+          <label>
+            Paid For Extended Warranty
+            <select id="paidForExternalWarranty">
+              <option value="">Skip</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+          <label>
+            Item Sold As
+            <select id="wayOfPurchased">
+              <option value="">Skip</option>
+              <option value="Used or second hand">Used or second hand</option>
+              <option value="Special order, tailor made, or one of a kind item">
+                Special order, tailor made, or one of a kind item
+              </option>
+              <option value="Closing down sale etc.">Closing down sale etc.</option>
+              <option value="Floor display, seconds, damaged, or imperfect">
+                Floor display, seconds, damaged, or imperfect
+              </option>
+              <option value="None of the above">None of the above</option>
+            </select>
+          </label>
+          <label>
+            Reason For Price Reduction
+            <select id="reasonForPriceReduction">
+              <option value="">Skip</option>
+              <option value="Price matching by the retailer">Price matching by the retailer</option>
+              <option value="Condition on you making cash payment">
+                Condition on you making cash payment
+              </option>
+              <option value="A special deal involving other items or benefits">
+                A special deal involving other items or benefits
+              </option>
+              <option value="Reduced as part of normal sale">Reduced as part of normal sale</option>
+            </select>
+          </label>
+          <label>
+            Previous Price Reduction Claim
+            <select id="hasPriorPriceReductionClaim">
+              <option value="">Skip</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+          <label>
+            Previous Merchandise Claim
+            <select id="hasPriorMerchandiseProtectionClaim">
+              <option value="">Skip</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+          <label>
+            Entitled To Input Tax Credit
+            <select id="isTaxCreditEntitled">
+              <option value="">Skip</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+    </main>
+    <script src="dist/popup.js"></script>
+  </body>
+</html>

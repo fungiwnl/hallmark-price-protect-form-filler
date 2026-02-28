@@ -1,0 +1,103 @@
+name: CI and Release
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.version.outputs.value }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Audit dependencies
+        run: bun audit
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Run tests
+        run: bun run test
+
+      - name: Build extension
+        run: bun run build
+
+      - name: Resolve release version
+        id: version
+        run: echo "value=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
+
+      - name: Package extension binary
+        run: zip -r "lat-price-protect-form-fill-${{ steps.version.outputs.value }}.zip" manifest.json popup.html popup.css dist
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-build
+          path: lat-price-protect-form-fill-${{ steps.version.outputs.value }}.zip
+          if-no-files-found: error
+
+  publish-release-asset:
+    if: github.event_name == 'release' && github.event.action == 'published'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: extension-build
+          path: .
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: lat-price-protect-form-fill-${{ needs.verify.outputs.release_version }}.zip
+
+  bump-version:
+    if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch && github.actor != 'github-actions[bot]'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bump patch version
+        id: bump
+        run: |
+          NEW_VERSION="$(./scripts/bump-version.sh --mode patch --write)"
+          echo "value=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json manifest.json
+          if git diff --cached --quiet; then
+            echo "No version changes to commit."
+            exit 0
+          fi
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.value }} [skip ci]"
+          git push

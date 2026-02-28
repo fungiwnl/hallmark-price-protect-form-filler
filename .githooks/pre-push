@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ "${SKIP_BUN_AUDIT:-}" = "1" ]; then
+  echo "Skipping bun audit because SKIP_BUN_AUDIT=1"
+  exit 0
+fi
+
+if command -v bun >/dev/null 2>&1; then
+  BUN_BIN="bun"
+elif [ -x "${HOME}/.bun/bin/bun" ]; then
+  BUN_BIN="${HOME}/.bun/bin/bun"
+else
+  echo "Error: bun is required for pre-push audit but was not found in PATH." >&2
+  echo "Install Bun: https://bun.sh" >&2
+  exit 1
+fi
+
+echo "Running dependency audit via: ${BUN_BIN} audit"
+"${BUN_BIN}" audit

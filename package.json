@@ -1,0 +1,26 @@
+{
+  "name": "lat-price-protect-form-fill",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "bun@1.2.22",
+  "scripts": {
+    "build": "rm -rf dist && esbuild src/popup.ts src/content.ts src/background.ts --bundle --format=iife --platform=browser --target=chrome114 --outdir=dist",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "ci:act": "act workflow_dispatch -W .github/workflows/act-verify.yml -j verify --pull=false",
+    "ci:act:verify": "act workflow_dispatch -W .github/workflows/act-verify.yml -j verify --pull=false",
+    "ci:act:bump": "act workflow_dispatch -W .github/workflows/act-verify.yml -j bump-version-logic --pull=false",
+    "ci:act:all": "act workflow_dispatch -W .github/workflows/act-verify.yml --pull=false",
+    "ci:act:prepull": "docker pull ghcr.io/catthehacker/ubuntu:act-24.04"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.29",
+    "@types/node": "^22.13.10",
+    "esbuild": "^0.25.0",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.8"
+  }
+}
