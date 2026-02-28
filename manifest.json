@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Hallmark Price Protection Autofill",
   "description": "Securely store and autofill personal details for price protection claim forms.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "permissions": ["storage", "tabs", "alarms"],
   "action": {
     "default_title": "Price Protection Autofill",
