@@ -156,4 +156,30 @@ describe("popup crypto", () => {
       })
     ).rejects.toThrow("Invalid saved profile format.");
   });
+
+  it("rejects scrypt parameters that would allocate too much memory", async () => {
+    const encrypted = await encryptProfile({ firstName: "Ada" }, "correct-passphrase", {
+      crypto: testCrypto,
+      scryptParams: {
+        N: 1024,
+        r: 8,
+        p: 1,
+        dkLen: 32
+      }
+    });
+
+    const oversizedRecord = {
+      ...encrypted,
+      scrypt: {
+        ...encrypted.scrypt,
+        N: 1_048_576
+      }
+    } as EncryptedProfileRecord;
+
+    await expect(
+      decryptProfile(oversizedRecord, "correct-passphrase", {
+        crypto: testCrypto
+      })
+    ).rejects.toThrow("Invalid saved profile format.");
+  });
 });

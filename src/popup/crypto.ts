@@ -18,6 +18,9 @@ export const DEFAULT_SCRYPT_PARAMS: ScryptParams = {
   dkLen: 32
 };
 
+// scrypt needs ~128 * N * r bytes; cap what a stored record can make us allocate.
+const MAX_SCRYPT_MEMORY_BYTES = 256 * 1024 * 1024;
+
 export interface EncryptedProfileRecord {
   version: number;
   kdf: "scrypt";
@@ -191,8 +194,9 @@ function validateScryptParams(params: ScryptParams): void {
     params.N > 1_048_576 ||
     !isPositiveInteger(params.r) ||
     params.r > 32 ||
+    128 * params.N * params.r > MAX_SCRYPT_MEMORY_BYTES ||
     !isPositiveInteger(params.p) ||
-    params.p > 16 ||
+    params.p > 4 ||
     !isPositiveInteger(params.dkLen) ||
     params.dkLen < 16 ||
     params.dkLen > 64

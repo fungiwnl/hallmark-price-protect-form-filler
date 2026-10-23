@@ -12,7 +12,8 @@ Chrome extension to securely store personal details and autofill the personal-de
 
 - `src/popup.ts`: popup UI + storage workflow.
 - `src/popup/crypto.ts`: encryption/decryption and base64 helpers.
-- `src/content.ts`: content script message handler.
+- `src/content.ts`: content script message handler (refuses to fill outside the claim URL).
+- `src/shared/claimUrl.ts`: the allowed claim URL check shared by popup and content script.
 - `src/content/fillers.ts`: DOM fill logic.
 - `tests/*.test.ts`: unit tests.
 
@@ -28,7 +29,7 @@ Prerequisite: install Bun ([https://bun.sh](https://bun.sh)).
    - `bun run test`
 4. Run static type checks:
    - `bun run typecheck`
-5. Install Git hooks:
+5. Install Git hooks (runs `bun audit` before each push):
    - `bun run hooks:install`
 
 The build step outputs extension-ready binaries in `dist/` (`dist/popup.js` and `dist/content.js`).
@@ -70,6 +71,8 @@ Optional package step (for sharing):
 - A background service-worker alarm actively clears the decrypted session cache at the TTL boundary, even after the popup closes.
 - Encryption uses AES-GCM with authenticated metadata and hardened scrypt defaults (`N=131072`, `r=8`, `p=2`, `dkLen=32`) to increase brute-force resistance.
 - New passphrases must be at least 12 characters and include uppercase, lowercase, number, and symbol.
-- Autofill is blocked unless the active tab URL is `https://maplc.outsystemsenterprise.com/HallmarkInsurance/CustomerClaim`.
+- Autofill is blocked unless the active tab URL is `https://maplc.outsystemsenterprise.com/HallmarkInsurance/CustomerClaim`. The content script is only injected on that page and re-checks the URL before filling, so a tab that navigates away while the profile decrypts is not filled.
+- The extension asks for `activeTab` (not `tabs`), so it can only read the URL of the current tab when you open the popup.
+- The passphrase field is cleared after a successful save or decrypt.
 - For step 2, ensure values are entered under `Claim Details (Step 2)` in the extension before saving.
 - If the claim form changes field IDs, selector mappings in `src/content/fillers.ts` may need updates.

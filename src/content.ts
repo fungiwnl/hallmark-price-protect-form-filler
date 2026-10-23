@@ -1,4 +1,5 @@
 import { fillPersonalDetails } from "./content/fillers";
+import { isAllowedClaimUrl } from "./shared/claimUrl";
 import { CLAIM_FIELD_IDS, PERSONAL_FIELD_IDS, type PersonalProfile } from "./shared/profile";
 
 interface FillMessage {
@@ -25,6 +26,14 @@ async function handleFillRequest(
   message: FillMessage,
   sendResponse: (response: FillResponse) => void
 ): Promise<void> {
+  if (!isAllowedClaimUrl(location.href)) {
+    sendResponse({
+      ok: false,
+      error: "This page is not the claim form, so nothing was filled."
+    } satisfies FillResponse);
+    return;
+  }
+
   try {
     const filledCount = await fillWithRetries(message.profile ?? {});
     if (filledCount === 0) {
@@ -67,6 +76,11 @@ async function fillWithRetries(profile: PersonalProfile): Promise<number> {
   let staleAttempts = 0;
 
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    // The claim form is a single-page app: stop if it routes away between retries.
+    if (!isAllowedClaimUrl(location.href)) {
+      break;
+    }
+
     const filledCount = fillPersonalDetails(profile);
     if (filledCount > bestFilledCount) {
       bestFilledCount = filledCount;

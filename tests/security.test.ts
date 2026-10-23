@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  ALLOWED_CLAIM_URL,
-  isAllowedClaimUrl,
-  validatePassphrase
-} from "../src/popup/security";
+import { validatePassphrase } from "../src/popup/security";
+import { ALLOWED_CLAIM_URL, isAllowedClaimUrl } from "../src/shared/claimUrl";
 
 describe("security rules", () => {
   describe("validatePassphrase", () => {

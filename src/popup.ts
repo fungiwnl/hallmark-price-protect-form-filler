@@ -1,11 +1,12 @@
 import { decryptProfile, encryptProfile, type EncryptedProfileRecord } from "./popup/crypto";
-import { ALLOWED_CLAIM_URL, isAllowedClaimUrl, validatePassphrase } from "./popup/security";
+import { validatePassphrase } from "./popup/security";
 import {
   clearCachedProfile,
   readCachedProfile,
   SESSION_PROFILE_TTL_MS,
   writeCachedProfile
 } from "./popup/sessionCache";
+import { ALLOWED_CLAIM_URL, isAllowedClaimUrl } from "./shared/claimUrl";
 import { FIELD_IDS, type PersonalProfile } from "./shared/profile";
 import {
   clearSessionCacheClearAlarm,
@@ -106,6 +107,7 @@ async function saveSecurely(): Promise<void> {
     }
 
     const encrypted = await encryptProfile(profile, passphrase);
+    clearPassphrase();
     await chrome.storage.local.set({ [STORAGE_KEY]: encrypted });
     await writeCachedProfile(profile);
     await scheduleSessionCacheClearAlarm(SESSION_PROFILE_TTL_MS);
@@ -147,6 +149,7 @@ async function loadSavedProfile(): Promise<void> {
     }
 
     const profile = await decryptProfile(encrypted, passphrase);
+    clearPassphrase();
     await writeCachedProfile(profile);
     await scheduleSessionCacheClearAlarm(SESSION_PROFILE_TTL_MS);
     setProfileToForm(profile);
@@ -205,6 +208,7 @@ async function fillCurrentTab(): Promise<void> {
       }
 
       profile = await decryptProfile(encrypted, passphrase);
+      clearPassphrase();
       await writeCachedProfile(profile);
       await scheduleSessionCacheClearAlarm(SESSION_PROFILE_TTL_MS);
     }
@@ -263,6 +267,10 @@ function sendMessageToTab(tabId: number, message: object): Promise<FillResponse 
 
 function getPassphrase(): string {
   return requireInputElement("passphrase").value;
+}
+
+function clearPassphrase(): void {
+  requireInputElement("passphrase").value = "";
 }
 
 function getFieldValue(fieldId: string): string {

@@ -3,7 +3,7 @@
   "name": "Hallmark Price Protection Autofill",
   "description": "Securely store and autofill personal details for price protection claim forms.",
   "version": "0.1.1",
-  "permissions": ["storage", "tabs", "alarms"],
+  "permissions": ["storage", "activeTab", "alarms"],
   "action": {
     "default_title": "Price Protection Autofill",
     "default_popup": "popup.html"
@@ -13,7 +13,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://maplc.outsystemsenterprise.com/*"],
+      "matches": ["https://maplc.outsystemsenterprise.com/HallmarkInsurance/CustomerClaim*"],
       "js": ["dist/content.js"],
       "run_at": "document_idle"
     }
