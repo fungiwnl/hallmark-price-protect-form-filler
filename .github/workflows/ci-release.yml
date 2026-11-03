@@ -15,10 +15,10 @@ jobs:
       release_version: ${{ steps.version.outputs.value }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
 
@@ -48,7 +48,7 @@ jobs:
         run: zip -r "hallmark-price-protect-form-fill-${{ steps.version.outputs.value }}.zip" manifest.json popup.html popup.css dist
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: extension-build
           path: hallmark-price-protect-form-fill-${{ steps.version.outputs.value }}.zip
@@ -65,7 +65,7 @@ jobs:
       VERSION: ${{ needs.verify.outputs.release_version }}
     steps:
       - name: Download build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: extension-build
           path: .
@@ -88,7 +88,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Bump patch version
         id: bump
