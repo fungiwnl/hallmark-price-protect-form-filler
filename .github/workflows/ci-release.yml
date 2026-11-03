@@ -42,7 +42,10 @@ jobs:
 
       - name: Resolve release version
         id: version
-        run: echo "value=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
+        run: |
+          VERSION="$(node -p 'require("./package.json").version')"
+          test -n "$VERSION"
+          echo "value=${VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Package extension binary
         run: zip -r "hallmark-price-protect-form-fill-${{ steps.version.outputs.value }}.zip" manifest.json popup.html popup.css dist
@@ -73,6 +76,7 @@ jobs:
       - name: Publish release
         run: |
           set -euo pipefail
+          : "${VERSION:?release version is empty}"
           ZIP="hallmark-price-protect-form-fill-${VERSION}.zip"
           if gh release view "v${VERSION}" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "v${VERSION}" "$ZIP" --repo "$GITHUB_REPOSITORY" --clobber
