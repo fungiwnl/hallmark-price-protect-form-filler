@@ -76,8 +76,8 @@ jobs:
       - name: Package extension binary
         run: |
           VERSION=$(node -p 'require("./package.json").version')
-          zip -r "lat-price-protect-form-fill-${VERSION}.zip" manifest.json popup.html popup.css dist
-          ls -lh "lat-price-protect-form-fill-${VERSION}.zip"
+          zip -r "hallmark-price-protect-form-fill-${VERSION}.zip" manifest.json popup.html popup.css dist
+          ls -lh "hallmark-price-protect-form-fill-${VERSION}.zip"
 
   bump-version-logic:
     needs: verify

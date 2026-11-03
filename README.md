@@ -52,6 +52,10 @@ Optional package step (for sharing):
 2. Create zip bundle:
    - `zip -r extension-build.zip manifest.json popup.html popup.css dist`
 
+## Releases
+
+Every push to `main` publishes a GitHub release `v<version>` with the packaged extension `hallmark-price-protect-form-fill-<version>.zip` attached. To install it, unzip it and load the unzipped folder with `Load unpacked` (below).
+
 ## Install in Chromium based browser
 
 1. Open extensions page:

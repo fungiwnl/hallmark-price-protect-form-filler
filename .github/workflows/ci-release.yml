@@ -3,8 +3,6 @@ name: CI and Release
 on:
   push:
   pull_request:
-  release:
-    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -56,12 +54,15 @@ jobs:
           path: hallmark-price-protect-form-fill-${{ steps.version.outputs.value }}.zip
           if-no-files-found: error
 
-  publish-release-asset:
-    if: github.event_name == 'release' && github.event.action == 'published'
+  release:
+    if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch && github.actor != 'github-actions[bot]'
     needs: verify
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.verify.outputs.release_version }}
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -69,10 +70,15 @@ jobs:
           name: extension-build
           path: .
 
-      - name: Upload release asset
-        uses: softprops/action-gh-release@v2
-        with:
-          files: hallmark-price-protect-form-fill-${{ needs.verify.outputs.release_version }}.zip
+      - name: Publish release
+        run: |
+          set -euo pipefail
+          ZIP="hallmark-price-protect-form-fill-${VERSION}.zip"
+          if gh release view "v${VERSION}" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "v${VERSION}" "$ZIP" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "v${VERSION}" "$ZIP" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "v${VERSION}" --generate-notes
+          fi
 
   bump-version:
     if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch && github.actor != 'github-actions[bot]'
