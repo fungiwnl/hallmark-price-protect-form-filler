@@ -54,19 +54,7 @@ Optional package step (for sharing):
 
 ## Releases
 
-Every push to `main` publishes a GitHub release `v<version>` with the packaged extension `hallmark-price-protect-form-fill-<version>.zip` attached. To install it, unzip it and load the unzipped folder with `Load unpacked` (below).
-
-## Install in Chromium based browser
-
-1. Open extensions page:
-   - Brave: `brave://extensions`
-   - Chrome: `chrome://extensions`
-2. Enable `Developer mode`.
-3. Click `Load unpacked`.
-4. Select `/Users/bfung/p/lat-price-protect-form-fill`.
-5. After code changes, rebuild and reload:
-   - `bun run build`
-   - Click `Reload` on the extension card in `chrome://extensions` / `brave://extensions`.
+Every push to `main` publishes a GitHub release `v<version>` with the packaged extension `hallmark-price-protect-form-fill-<version>.zip` attached. To install it, unzip it, open `chrome://extensions` (or `brave://extensions`), enable `Developer mode`, click `Load unpacked` and select the unzipped folder.
 
 ## Notes
 
