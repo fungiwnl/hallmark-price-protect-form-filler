@@ -1,6 +1,6 @@
 {
   "name": "hlmark-price-protect-form-fill",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "packageManager": "bun@1.2.22",
   "engines": {
